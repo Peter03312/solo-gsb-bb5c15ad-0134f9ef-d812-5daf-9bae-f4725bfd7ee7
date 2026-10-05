@@ -1,0 +1,23 @@
+services:
+  aggregator:
+    build: .
+    image: drill-record-aggregator:1.0.0
+    container_name: drill-aggregator
+    environment:
+      # SQLite 数据库文件路径（挂载到命名卷持久化）
+      DB_PATH: /data/aggregator.db
+      API_PREFIX: /api
+    ports:
+      - "8080:8080"
+    volumes:
+      - aggregator-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  aggregator-data:
